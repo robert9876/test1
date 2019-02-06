@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>test1</groupId>
+	<artifactId>test1</artifactId>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>test1</name>
+	<!-- FIXME change it to the project's website -->
+	<url>http://www.example.com</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+
+		<!-- TODO: need to define targetrepositoryId and targetrepositoryUrl, and provide credentials in settings.xml
+		<targetrepositoryId></targetrepositoryId>
+		<targetrepositoryUrl></targetrepositoryUrl>
+		-->
+		
+		<maven-install-plugin-version>2.5.2</maven-install-plugin-version>	<!-- see: https://issues.apache.org/jira/browse/MINSTALL-156?filter=-2 -->
+		<maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>	<!-- see: https://issues.apache.org/jira/browse/MDEPLOY-251?filter=-2 -->
+<!--
+		<maven-install-plugin-version>3.0.0-M1</maven-install-plugin-version>
+		<maven-deploy-plugin-version>3.0.0-M1</maven-deploy-plugin-version>
+-->
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>blabla</finalName>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<attach>false</attach>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifestEntries>
+							<plugin-info>${project.version}-${maven.build.timestamp}</plugin-info>
+							<buildNumber>${buildNumber}</buildNumber>
+							<scmBranch>${scmBranch}</scmBranch>
+							<scmTag>${scmTag}</scmTag>
+						</manifestEntries>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<!-- install both the "regular" jar and the with-dependencies jar to 
+						your repository when you do a build -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-install</id>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>install-small-file</id>
+						<phase>install</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${project.build.directory}/${project.build.finalName}.jar</file>
+							<artifactId>${project.build.finalName}</artifactId>
+							<groupId>${project.groupId}</groupId>
+							<version>${project.version}</version>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>install-fat-file</id>
+						<phase>install</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</file>
+							<generatePom>false</generatePom>
+							<artifactId>${project.build.finalName}</artifactId>
+							<groupId>${project.groupId}</groupId>
+							<version>${project.version}</version>
+							<classifier>jar-with-dependencies</classifier>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>deploy-small-file</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy-file</goal>
+						</goals>
+						<configuration>
+							<repositoryId>${targetrepositoryId}</repositoryId>
+							<url>${targetrepositoryUrl}</url>
+							<file>${project.build.directory}/${project.build.finalName}.jar</file>
+							<artifactId>${project.build.finalName}</artifactId>
+							<groupId>${project.groupId}</groupId>
+							<version>${project.version}</version>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>deploy-fat-file</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy-file</goal>
+						</goals>
+						<configuration>
+							<repositoryId>${targetrepositoryId}</repositoryId>
+							<url>${targetrepositoryUrl}</url>
+							<file>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</file>
+							<generatePom>false</generatePom>
+							<artifactId>${project.build.finalName}</artifactId>
+							<groupId>${project.groupId}</groupId>
+							<version>${project.version}</version>
+							<classifier>jar-with-dependencies</classifier>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+			<plugins>
+				<!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>3.1.0</version>
+				</plugin>
+				<!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.22.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${maven-install-plugin-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${maven-deploy-plugin-version}</version>
+				</plugin>
+				<!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.7.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
